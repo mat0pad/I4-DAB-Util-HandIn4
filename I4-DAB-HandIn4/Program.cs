@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
 using System.Net;
+using Newtonsoft.Json;
+using System.Threading;
 
 namespace I4DABHandIn4
 {
@@ -16,7 +17,7 @@ namespace I4DABHandIn4
 
             //LoadSensorInfoFromSite();
 
-            LoadApartment2SensorFromSite();
+            //LoadApartment2SensorFromSite();
 
             /*for (int i = 1; i < 11801; i++)
             {
@@ -26,9 +27,8 @@ namespace I4DABHandIn4
         }
 
         // Load sample from website
-        public static void LoadSampleFromSite(int i)
+        public static void LoadFromSite(int i)
         {
-
             using (var httpClient = new WebClient())
             {
                 var json = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/dataGDL/data/" + i + ".json");
@@ -36,6 +36,7 @@ namespace I4DABHandIn4
                 ReadingRootObject root = JsonConvert.DeserializeObject<ReadingRootObject>(json);
 
                 Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
+
 
                 // Put into database here!
             }
@@ -45,7 +46,6 @@ namespace I4DABHandIn4
         public static void LoadSampleFromLocalJson()
         {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
 
             using (StreamReader r = new StreamReader(path + "/1.json"))
             {
