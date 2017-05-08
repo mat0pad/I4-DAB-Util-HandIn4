@@ -37,24 +37,18 @@ namespace I4DABHandIn4
 
         public static void LoadJson()
         {
-			int i = 1;
-            string json;
+			string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
-			var webRequest = WebRequest.Create(@"http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/dataGDL/data/" + i + ".json");
 
-			using (var response = webRequest.GetResponse())
-			using (var content = response.GetResponseStream())
-			using (var reader = new StreamReader(content))
+			using (StreamReader r = new StreamReader(path + "/1.json"))
 			{
-				json = reader.ReadToEnd();
+				string json = r.ReadToEnd();
+				RootObject root = JsonConvert.DeserializeObject<RootObject>(json);
+
+
+				Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
+
 			}
-
-
-            RootObject root = JsonConvert.DeserializeObject<RootObject>(json);
-
-
-                Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
-            Console.WriteLine("Id:" + root.reading[0].sensorId + " Version: " + root.version);
         }
 
 
