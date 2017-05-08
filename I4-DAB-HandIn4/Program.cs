@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using Newtonsoft.Json;
-using System.Net;
+using System.Threading;
 
 namespace I4DABHandIn4
 {
@@ -14,22 +14,24 @@ namespace I4DABHandIn4
             Console.WriteLine("Loading json from website!");
 
             //LoadJson(); local
+            for (int i = 1; i <= 11003; i++)
+            {
+                LoadFromSiteAsync(i); // web
+                //Thread.Sleep(5000);
+			}
 
-            LoadFromSiteAsync(); // web
         }
 
-        public static void LoadFromSiteAsync()
+        public static void LoadFromSite(int i)
         {
-
             using (var httpClient = new WebClient())
             {
-                var json = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/dataGDL/data/1.json");
+                var json = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/dataGDL/data/" + i + ".json");
 
                 RootObject root = JsonConvert.DeserializeObject<RootObject>(json);
 
 
                 Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
-
             }
         }
 
