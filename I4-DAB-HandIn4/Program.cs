@@ -11,7 +11,7 @@ namespace I4DABHandIn4
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("Loading json from website!");
+            Console.WriteLine("Loading json here!");
 
             //LoadCharacteristicsFromSite();
 
@@ -37,12 +37,11 @@ namespace I4DABHandIn4
 
                 Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
 
-
                 // Put into database here!
             }
         }
 
-        // Load sample from desktop
+        // Load sample from desktop DONT USE!
         public static void LoadSampleFromLocalJson()
         {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
@@ -52,8 +51,9 @@ namespace I4DABHandIn4
                 string json = r.ReadToEnd();
                 ReadingRootObject root = JsonConvert.DeserializeObject<ReadingRootObject>(json);
 
-
                 Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
+
+                // Put into database here!
             }
         }
 
@@ -160,7 +160,6 @@ namespace I4DABHandIn4
     }
 
     /* Characteristics */
-
     public class AppartmentCharacteristic
     {
         public int No { get; set; }
@@ -189,7 +188,6 @@ namespace I4DABHandIn4
     }
 
     /* SensorInfo */
-
     public class SensorInfoObject
     {
         public string timestamp { get; set; }
@@ -199,7 +197,6 @@ namespace I4DABHandIn4
     }
 
     /* Apartment2Sensor */
-
     public class Apartment2SensorObject
     {
 
