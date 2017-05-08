@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -142,7 +142,8 @@ namespace I4DABHandIn4
         }
     }
 
-    /* Sample */
+
+    //Sample 
     public class Reading
     {
         public int SensorId { get; set; }
@@ -158,7 +159,7 @@ namespace I4DABHandIn4
         public int Version { get; set; }
     }
 
-    /* Characteristics */
+    //Characteristics 
     public class AppartmentCharacteristic
     {
         public int No { get; set; }
@@ -186,8 +187,8 @@ namespace I4DABHandIn4
         public List<SensorCharacteristic> SensorCharacteristic { get; set; }
     }
 
-    /* SensorInfo */
-    public class SensorInfoObject
+	//SensorInfo
+	public class SensorInfoObject
     {
         public string Timestamp { get; set; }
         public string Description { get; set; }
@@ -195,8 +196,8 @@ namespace I4DABHandIn4
         public int SensorID { get; set; }
     }
 
-    /* Apartment2Sensor */
-    public class Apartment2SensorObject
+	// Apartment2Sensor
+	public class Apartment2SensorObject
     {
 
         public int SensorID { get; set; }
