@@ -12,29 +12,37 @@ namespace I4DABHandIn4
         {
             Console.WriteLine("Loading json from website!");
 
-            //LoadJson(); local
+            //LoadCharacteristicsFromSite();
 
-            LoadFromSiteAsync(); // web
+            //LoadSensorInfoFromSite();
+
+            LoadApartment2SensorFromSite();
+
+            /*for (int i = 1; i < 11801; i++)
+            {
+                LoadSampleFromSite(i);
+            }*/
+
         }
 
-        public static void LoadFromSiteAsync()
+        // Load sample from website
+        public static void LoadSampleFromSite(int i)
         {
 
             using (var httpClient = new WebClient())
             {
-                var json = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/dataGDL/data/1.json");
+                var json = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/dataGDL/data/" + i + ".json");
 
-                RootObject root = JsonConvert.DeserializeObject<RootObject>(json);
-
+                ReadingRootObject root = JsonConvert.DeserializeObject<ReadingRootObject>(json);
 
                 Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
 
+                // Put into database here!
             }
         }
 
-
-
-        public static void LoadJson()
+        // Load sample from desktop
+        public static void LoadSampleFromLocalJson()
         {
             string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
@@ -42,19 +50,100 @@ namespace I4DABHandIn4
             using (StreamReader r = new StreamReader(path + "/1.json"))
             {
                 string json = r.ReadToEnd();
-                RootObject root = JsonConvert.DeserializeObject<RootObject>(json);
+                ReadingRootObject root = JsonConvert.DeserializeObject<ReadingRootObject>(json);
 
 
                 Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
+            }
+        }
 
+        // Load characteristics from website
+        public static void LoadCharacteristicsFromSite()
+        {
+            using (var httpClient = new WebClient())
+            {
+                var json = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/GFKSC002_original.txt");
 
+                CharacteristicRootObject root = JsonConvert.DeserializeObject<CharacteristicRootObject>(json);
+
+                Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
+
+                // Put into database here!
             }
         }
 
 
+        // Load characteristics from website
+        public static void LoadSensorInfoFromSite()
+        {
+            using (var httpClient = new WebClient())
+            {
 
+                var csv = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/sensors_information.txt");
+
+                var list = new List<SensorInfoObject>();
+
+                string[] tempStr = csv.Split('\n');
+
+                for (int i = 0; i < tempStr.Length; i++)
+                {
+                    if (i != 0 && !string.IsNullOrWhiteSpace(tempStr[i]))
+                    {
+                        Console.WriteLine(tempStr[i]);
+
+                        string[] temp = tempStr[i].Split(';');
+
+                        list.Add(new SensorInfoObject()
+                        {
+                            description = temp[2],
+                            timestamp = temp[1],
+                            sensorID = int.Parse(temp[0]),
+                            units = temp[3]
+                        });
+                    }
+                }
+
+
+                // Do something with list here!
+            }
+        }
+
+
+        // Load characteristics from website
+        public static void LoadApartment2SensorFromSite()
+        {
+            using (var httpClient = new WebClient())
+            {
+
+                var csv = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/apartment-to-sensor_NotJSONCorrupt.txt");
+
+                var list = new List<Apartment2SensorObject>();
+
+                string[] tempStr = csv.Split('\n');
+
+                for (int i = 0; i < tempStr.Length; i++)
+                {
+                    if (i != 0 && !string.IsNullOrWhiteSpace(tempStr[i]))
+                    {
+                        Console.WriteLine(tempStr[i]);
+
+                        string[] temp = tempStr[i].Split(';');
+
+                        list.Add(new Apartment2SensorObject()
+                        {
+                            apartmentID = (temp[1] != "\r" ? int.Parse(temp[1]) : 0),
+                            sensorID = int.Parse(temp[0]),
+                        });
+                    }
+                }
+
+
+                // Do something with list here!
+            }
+        }
     }
 
+    /* Sample */
     public class Reading
     {
         public int sensorId { get; set; }
@@ -63,10 +152,58 @@ namespace I4DABHandIn4
         public string timestamp { get; set; }
     }
 
-    public class RootObject
+    public class ReadingRootObject
     {
         public string timestamp { get; set; }
         public List<Reading> reading { get; set; }
         public int version { get; set; }
+    }
+
+    /* Characteristics */
+
+    public class AppartmentCharacteristic
+    {
+        public int No { get; set; }
+        public double Size { get; set; }
+        public int Floor { get; set; }
+        public int appartmentId { get; set; }
+    }
+
+    public class SensorCharacteristic
+    {
+        public string calibrationCoeff { get; set; }
+        public string description { get; set; }
+        public string calibrationDate { get; set; }
+        public string externalRef { get; set; }
+        public int sensorId { get; set; }
+        public string unit { get; set; }
+        public string calibrationEquation { get; set; }
+    }
+
+    public class CharacteristicRootObject
+    {
+        public List<AppartmentCharacteristic> appartmentCharacteristic { get; set; }
+        public string timestamp { get; set; }
+        public int version { get; set; }
+        public List<SensorCharacteristic> sensorCharacteristic { get; set; }
+    }
+
+    /* SensorInfo */
+
+    public class SensorInfoObject
+    {
+        public string timestamp { get; set; }
+        public string description { get; set; }
+        public string units { get; set; }
+        public int sensorID { get; set; }
+    }
+
+    /* Apartment2Sensor */
+
+    public class Apartment2SensorObject
+    {
+
+        public int sensorID { get; set; }
+        public int apartmentID { get; set; }
     }
 }
