@@ -16,7 +16,7 @@ namespace I4DABHandIn4
             //LoadJson(); local
             for (int i = 1; i <= 11003; i++)
             {
-                LoadFromSiteAsync(i); // web
+                LoadFromSite(i); // web
                 //Thread.Sleep(5000);
 			}
 
