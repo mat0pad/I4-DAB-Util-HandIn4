@@ -19,15 +19,16 @@ namespace I4DABHandIn4
 
             //LoadApartment2SensorFromSite();
 
-            /*for (int i = 1; i < 11801; i++)
+            for (int i = 1; i < 11801; i++)
             {
                 LoadSampleFromSite(i);
-            }*/
+                Thread.Sleep(2000);
+            }
 
         }
 
         // Load sample from website
-        public static void LoadFromSite(int i)
+        public static void LoadSampleFromSite(int i)
         {
             using (var httpClient = new WebClient())
             {
@@ -35,7 +36,7 @@ namespace I4DABHandIn4
 
                 ReadingRootObject root = JsonConvert.DeserializeObject<ReadingRootObject>(json);
 
-                Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
+                Console.WriteLine("Time:" + root.Timestamp + " Version: " + root.Version);
 
                 // Put into database here!
             }
@@ -51,7 +52,7 @@ namespace I4DABHandIn4
                 string json = r.ReadToEnd();
                 ReadingRootObject root = JsonConvert.DeserializeObject<ReadingRootObject>(json);
 
-                Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
+                Console.WriteLine("Time:" + root.Timestamp + " Version: " + root.Version);
 
                 // Put into database here!
             }
@@ -66,12 +67,11 @@ namespace I4DABHandIn4
 
                 CharacteristicRootObject root = JsonConvert.DeserializeObject<CharacteristicRootObject>(json);
 
-                Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
+                Console.WriteLine("Time:" + root.Timestamp + " Version: " + root.Version);
 
                 // Put into database here!
             }
         }
-
 
         // Load characteristics from website
         public static void LoadSensorInfoFromSite()
@@ -95,10 +95,10 @@ namespace I4DABHandIn4
 
                         list.Add(new SensorInfoObject()
                         {
-                            description = temp[2],
-                            timestamp = temp[1],
-                            sensorID = int.Parse(temp[0]),
-                            units = temp[3]
+                            Description = temp[2],
+                            Timestamp = temp[1],
+                            SensorID = int.Parse(temp[0]),
+                            Units = temp[3]
                         });
                     }
                 }
@@ -107,7 +107,6 @@ namespace I4DABHandIn4
                 // Do something with list here!
             }
         }
-
 
         // Load characteristics from website
         public static void LoadApartment2SensorFromSite()
@@ -131,8 +130,8 @@ namespace I4DABHandIn4
 
                         list.Add(new Apartment2SensorObject()
                         {
-                            apartmentID = (temp[1] != "\r" ? int.Parse(temp[1]) : 0),
-                            sensorID = int.Parse(temp[0]),
+                            ApartmentID = (temp[1] != "\r" ? int.Parse(temp[1]) : 0),
+                            SensorID = int.Parse(temp[0]),
                         });
                     }
                 }
@@ -146,17 +145,17 @@ namespace I4DABHandIn4
     /* Sample */
     public class Reading
     {
-        public int sensorId { get; set; }
-        public int appartmentId { get; set; }
-        public double value { get; set; }
-        public string timestamp { get; set; }
+        public int SensorId { get; set; }
+        public int AppartmentId { get; set; }
+        public double Value { get; set; }
+        public string Timestamp { get; set; }
     }
 
     public class ReadingRootObject
     {
-        public string timestamp { get; set; }
-        public List<Reading> reading { get; set; }
-        public int version { get; set; }
+        public string Timestamp { get; set; }
+        public List<Reading> Reading { get; set; }
+        public int Version { get; set; }
     }
 
     /* Characteristics */
@@ -165,42 +164,42 @@ namespace I4DABHandIn4
         public int No { get; set; }
         public double Size { get; set; }
         public int Floor { get; set; }
-        public int appartmentId { get; set; }
+        public int AppartmentId { get; set; }
     }
 
     public class SensorCharacteristic
     {
-        public string calibrationCoeff { get; set; }
-        public string description { get; set; }
-        public string calibrationDate { get; set; }
-        public string externalRef { get; set; }
-        public int sensorId { get; set; }
-        public string unit { get; set; }
-        public string calibrationEquation { get; set; }
+        public string CalibrationCoeff { get; set; }
+        public string Description { get; set; }
+        public string CalibrationDate { get; set; }
+        public string ExternalRef { get; set; }
+        public int SensorId { get; set; }
+        public string Unit { get; set; }
+        public string CalibrationEquation { get; set; }
     }
 
     public class CharacteristicRootObject
     {
-        public List<AppartmentCharacteristic> appartmentCharacteristic { get; set; }
-        public string timestamp { get; set; }
-        public int version { get; set; }
-        public List<SensorCharacteristic> sensorCharacteristic { get; set; }
+        public List<AppartmentCharacteristic> AppartmentCharacteristic { get; set; }
+        public string Timestamp { get; set; }
+        public int Version { get; set; }
+        public List<SensorCharacteristic> SensorCharacteristic { get; set; }
     }
 
     /* SensorInfo */
     public class SensorInfoObject
     {
-        public string timestamp { get; set; }
-        public string description { get; set; }
-        public string units { get; set; }
-        public int sensorID { get; set; }
+        public string Timestamp { get; set; }
+        public string Description { get; set; }
+        public string Units { get; set; }
+        public int SensorID { get; set; }
     }
 
     /* Apartment2Sensor */
     public class Apartment2SensorObject
     {
 
-        public int sensorID { get; set; }
-        public int apartmentID { get; set; }
+        public int SensorID { get; set; }
+        public int ApartmentID { get; set; }
     }
 }
