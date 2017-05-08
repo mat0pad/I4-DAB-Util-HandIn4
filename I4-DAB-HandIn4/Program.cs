@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using Newtonsoft.Json;
 using System.Net;
 
@@ -36,19 +37,24 @@ namespace I4DABHandIn4
 
         public static void LoadJson()
         {
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+			int i = 1;
+            string json;
+
+			var webRequest = WebRequest.Create(@"http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/dataGDL/data/" + i + ".json");
+
+			using (var response = webRequest.GetResponse())
+			using (var content = response.GetResponseStream())
+			using (var reader = new StreamReader(content))
+			{
+				json = reader.ReadToEnd();
+			}
 
 
-            using (StreamReader r = new StreamReader(path + "/1.json"))
-            {
-                string json = r.ReadToEnd();
-                RootObject root = JsonConvert.DeserializeObject<RootObject>(json);
+            RootObject root = JsonConvert.DeserializeObject<RootObject>(json);
 
 
                 Console.WriteLine("Time:" + root.timestamp + " Version: " + root.version);
-
-
-            }
+            Console.WriteLine("Id:" + root.reading[0].sensorId + " Version: " + root.version);
         }
 
 
