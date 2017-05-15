@@ -49,6 +49,7 @@
     <Compile Include="ApartmentCharacteristics.cs" />
     <Compile Include="Sample.cs" />
     <Compile Include="SensorToApartment.cs" />
+    <Compile Include="SensorContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
