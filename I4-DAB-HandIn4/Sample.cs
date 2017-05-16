@@ -13,13 +13,8 @@ namespace I4DABHandIn4
 		public double Value { get; set; }
 		public string Timestamp { get; set; }
 
-        public int SensorCharacteristicsId { get; set; }
-        public int ApartmentCharacteristicsId { get; set; }
-
         public int SampleCollectionId { get; set; }
 
-        public virtual SensorCharacteristics SensorCharacteristics { get; set; }
-        public virtual ApartmentCharacteristics ApartmentCharacteristics { get; set; }
         public virtual SampleCollection SampleCollection { get; set; }
     }
 
@@ -31,5 +26,12 @@ namespace I4DABHandIn4
             ToTable("Id");
             HasKey(x => new { x.SensorId, x.AppartmentId });
         }
+    }
+
+
+    public class SampleModel
+    {
+        public double Value { get; set; }
+        public string Timestamp { get; set; }
     }
 }

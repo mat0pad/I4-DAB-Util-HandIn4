@@ -6,11 +6,19 @@ namespace I4DABHandIn4
 {
     public class SampleCollection
     {
+        public SampleCollection()
+        {
+            Samples = new HashSet<Sample>();
+        }
+
         public int Version { get; set; }
 
-        [Key]
+       
         public string Timestamp { get; set; }
 
-        public virtual List<Sample> Samples { get; set; }
+        [Key]
+        public int Id { get; set; }
+
+        public virtual ICollection<Sample> Samples { get; set; }
     }
 }

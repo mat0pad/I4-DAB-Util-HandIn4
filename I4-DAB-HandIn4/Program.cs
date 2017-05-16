@@ -1,6 +1,7 @@
 ﻿﻿using System;
 using System.Collections.Generic;
-using System.IO;
+ using System.Data.Entity.Infrastructure;
+ using System.IO;
 using System.Net;
 using Newtonsoft.Json;
 using System.Threading;
@@ -13,20 +14,27 @@ namespace I4DABHandIn4
         {
             Console.WriteLine("Loading json here!");
 
-            //LoadCharacteristicsFromSite();
+            // Load static data into db
+            // ----------------------------------
+            // Load appartment & sensor information
+            //LoadAllCharacteristicsFromSite();
 
-            //LoadSensorInfoFromSite();
+            // Setup many to many
+            //LoadAppartment2SensorFromSite();
+            // ----------------------------------
 
-            LoadApartment2SensorFromSite();
-
-
-              /*  for (int i = 1; i < 11801; i++)
-                {
-                    LoadSampleFromSite(i);
-                    Thread.Sleep(2000);
-                }*/
-
+            // Simulate dynamic data that is
+            // saved into db
+            // ----------------------------------
+            for (int i = 1; i < 11801; i++)
+            {  
+                Console.WriteLine("Loading new sample");
+                LoadSampleFromSite(i);
+                Thread.Sleep(5000);
             }
+            // ----------------------------------
+
+        }
 
         // Load sample from website
         public static void LoadSampleFromSite(int i)
@@ -45,47 +53,36 @@ namespace I4DABHandIn4
                     {
                         samples.Add(new Sample()
                         {
-                            ApartmentCharacteristicsId = item.AppartmentId,
-                            SensorCharacteristicsId = item.SensorId,
                             Timestamp = item.Timestamp,
                             AppartmentId = item.AppartmentId,
                             SensorId = item.SensorId,
                             Value = item.Value,
                             SampleCollectionId = i
                         });
-
-                        break;
                     }
 
                     // Create and save a sample collection 
-                    Console.WriteLine("Time:" + root.Timestamp + " Version: " + root.Version);
+                    Console.WriteLine("Id: " + i + ", Time: " + root.Timestamp + ", Version: " + root.Version);
 
-                    var collection = new SampleCollection() { Version = root.Version, Timestamp = root.Timestamp, Samples = samples};
+                    var collection = new SampleCollection() { Id = i, Version = root.Version, Timestamp = root.Timestamp, Samples = samples};
                     db.SampleCollections.Add(collection);
 
-                    db.SaveChanges();
+                    try
+                    {
+                        db.SaveChanges();
+
+                        //Console.WriteLine("--- Saved {0} ----\n", root.Timestamp);
+                    }
+                    catch (DbUpdateException e)
+                    {
+                        //Console.WriteLine("---- {0} Already there ----\n", root.Timestamp);
+                    }
                 }
             }
         }
 
-        // Load sample from desktop DONT USE!
-        public static void LoadSampleFromLocalJson()
-        {
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-            using (StreamReader r = new StreamReader(path + "/1.json"))
-            {
-                string json = r.ReadToEnd();
-                ReadingRootObject root = JsonConvert.DeserializeObject<ReadingRootObject>(json);
-
-                Console.WriteLine("Time:" + root.Timestamp + " Version: " + root.Version);
-
-                // Put into database here!
-            }
-        }
-
         // Load characteristics from website
-        public static void LoadCharacteristicsFromSite()
+        public static void LoadAllCharacteristicsFromSite()
         {
             using (var httpClient = new WebClient())
             {
@@ -95,7 +92,82 @@ namespace I4DABHandIn4
 
                 Console.WriteLine("Time:" + root.Timestamp + " Version: " + root.Version);
 
-                // Put into database here!
+                // Sensor part
+                using (var db = new SensorContext())
+                {
+                    Console.WriteLine("SensorCharacteristic length - " + root.SensorCharacteristic.Count);
+
+                    Thread.Sleep(3000);
+
+                    var list = root.SensorCharacteristic;
+
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        // Create and save a item
+                        db.Sensors.Add(new SensorCharacteristics()
+                        {
+                            SensorCharacteristicsId = list[i].SensorId,
+                            CalibrationCoeff = (string.IsNullOrWhiteSpace(list[i].CalibrationCoeff) ? null : list[i].CalibrationCoeff),
+                            CalibrationEquation = (string.IsNullOrWhiteSpace(list[i].CalibrationEquation) ? null : list[i].CalibrationEquation),
+                            CalibrationDate = list[i].CalibrationDate,
+                            Description = list[i].Description,
+                            ExternalRef = (string.IsNullOrWhiteSpace(list[i].ExternalRef) ? null : list[i].ExternalRef),
+                            Unit = list[i].Unit
+                        });
+
+                        Console.WriteLine("Adding item - " + i);
+
+                        try
+                        {
+                            db.SaveChanges();
+
+                            Console.WriteLine("--- Saved {0} ----", i);
+                        }
+                        catch (DbUpdateException e)
+                        {
+                            Console.WriteLine("---- {0} Already there ----", i);
+                        }
+
+                    }
+
+                    Console.WriteLine("--- Saving done for SensorCharacteristic ----");
+
+
+                    // Appartment
+                    Console.WriteLine("AppartmentCharacteristic length - " + root.AppartmentCharacteristic.Count);
+
+                    Thread.Sleep(3000);
+
+                    var list2 = root.AppartmentCharacteristic;
+
+                    for (int i = 0; i < list2.Count; i++)
+                    {
+                        // Create and save a item
+                        db.Apartments.Add(new ApartmentCharacteristics()
+                        {
+                            ApartmentCharacteristicsId = list2[i].AppartmentId,
+                            Floor = list2[i].Floor,
+                            Size = list2[i].Size,
+                            No = list2[i].No
+                        });
+
+                        Console.WriteLine("Adding item - " + i);
+
+                        try
+                        {
+                            db.SaveChanges();
+
+                            Console.WriteLine("--- Saved {0} ----", i);
+                        }
+                        catch (DbUpdateException e)
+                        {
+                            Console.WriteLine("---- {0} Already there ----", i);
+                        }
+
+                    }
+
+                    Console.WriteLine("--- Saving done for AppartmentCharacteristic ----");
+                }
             }
         }
 
@@ -105,7 +177,8 @@ namespace I4DABHandIn4
             using (var httpClient = new WebClient())
             {
 
-                var csv = httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/sensors_information.txt");
+                var csv =
+                    httpClient.DownloadString("http://userportal.iha.dk/~jrt/i4dab/E14/HandIn4/sensors_information.txt");
 
                 var list = new List<SensorInfoObject>();
 
@@ -130,12 +203,12 @@ namespace I4DABHandIn4
                 }
 
 
-                // Do something with list here!
+                
             }
         }
 
-        // Load characteristics from website
-        public static void LoadApartment2SensorFromSite()
+        // Load sensor2appartment from website
+        public static void LoadAppartment2SensorFromSite()
         {
             using (var httpClient = new WebClient())
             {
@@ -164,30 +237,39 @@ namespace I4DABHandIn4
 
                 using (var db = new SensorContext())
                 {
-                    /* Console.WriteLine("List length - " + list.Count);
+                    Console.WriteLine("List length - " + list.Count);
 
-                     Thread.Sleep(5000);
+                     Thread.Sleep(3000);
 
                      for (int i = 0; i < list.Count; i++)
                      {
-                         // Create and save a item
-                         db.SensorToApartments.Add(new SensorToApartment()
+                        var sensor = db.Sensors.Find(list[i].SensorID);
+
+                        var appartment = db.Apartments.Find(list[i].ApartmentID);
+
+                         try
                          {
-                             AppartmentId = list[i].ApartmentID,
-                             SensorId = list[i].SensorID
-                         });
+                            appartment.SensorCharacteristics.Add(sensor);
+                            sensor.ApartmentCharacteristics.Add(appartment);
+                         }
+                        catch (Exception e) { continue; }    
 
                          Console.WriteLine("Adding item - " + i);
-                     }*/
 
-                    db.SensorToApartments.Add(new SensorToApartment()
-                    {
-                        AppartmentId = list[0].ApartmentID,
-                        SensorId = list[0].SensorID
-                    });
+                         try
+                         {
+                             db.SaveChanges();
 
-                    Console.WriteLine("--- Saving ----");
-                    db.SaveChanges();
+                            Console.WriteLine("--- Saved {0} ----", i);
+                        }
+                         catch (DbUpdateException e)
+                         {
+                            Console.WriteLine("---- {0} Already there ----", i);
+                        }
+                        
+                    }
+
+                    Console.WriteLine("--- Saving Done ----");
                 }
             }
         }
