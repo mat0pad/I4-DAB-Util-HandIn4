@@ -16,12 +16,12 @@ namespace I4DABHandIn4
         private static readonly string connString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=I4DABHandIn4.SensorContext;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
         [SqlProcedure]
-        public List<SampleModel> GetSamplesForFlat(SqlString time1, SqlString time2, SqlInt64 number, SqlInt64 floor )
+        public List<SampleModel> GetSamplesForFlat(SqlString time1, SqlString time2, SqlInt64 number, SqlInt64 floor)
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 SqlCommand cmdAppartment = new SqlCommand();
-                
+
                 SqlParameter numberParam = new SqlParameter("@number", SqlDbType.BigInt);
                 SqlParameter floorParam = new SqlParameter("@floor", SqlDbType.BigInt);
 
@@ -111,6 +111,66 @@ namespace I4DABHandIn4
                 return list;
             }
         }
-    }
 
+             [SqlProcedure]
+        public void AddSamplesForFlat(List<Sample> samples, SqlInt64 number, SqlInt64 floor)
+        {
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                SqlCommand cmdAppartment = new SqlCommand();
+
+                SqlParameter numberParam = new SqlParameter("@number", SqlDbType.BigInt);
+                SqlParameter floorParam = new SqlParameter("@floor", SqlDbType.BigInt);
+
+                cmdAppartment.Parameters.Add(numberParam);
+                cmdAppartment.Parameters.Add(floorParam);
+
+                numberParam.Value = number;
+                floorParam.Value = floor;
+
+                cmdAppartment.CommandText =
+                    "SELECT  ApartmentCharacteristicsId FROM  dbo.ApartmentCharacteristics" +
+                    " WHERE (No = @number AND Floor = @floor)";
+
+                cmdAppartment.Connection = conn;
+                SqlDataReader rdr = null;
+                int appartmentId = -1;
+                try
+                {
+                    conn.Open();
+
+                    // Send command
+                    rdr = cmdAppartment.ExecuteReader();
+
+                    while (rdr.Read())
+                        appartmentId = Convert.ToInt32(rdr["ApartmentCharacteristicsId"]);
+                }
+                finally
+                {
+                    // Close connection
+                    rdr?.Close();
+                    conn?.Close();
+                }
+
+                if (appartmentId == -1) ;
+                // create appartmentId
+
+
+                // prepare command string
+                string insertString = @"
+                insert into Categories
+                (CategoryName, Description)
+                values ('Miscellaneous', 'Whatever doesn't fit elsewhere')";
+
+                // 1. Instantiate a new command with a query and connection
+                SqlCommand cmd = new SqlCommand(insertString, conn);
+
+                SqlParameter sampleParam = new SqlParameter("@sample", SqlDbType.BigInt);
+
+                // 2. Call ExecuteNonQuery to send command
+                cmd.ExecuteNonQuery();
+
+            }
+        }
+    }
 }
