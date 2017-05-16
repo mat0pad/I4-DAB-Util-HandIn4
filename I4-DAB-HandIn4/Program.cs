@@ -17,15 +17,16 @@ namespace I4DABHandIn4
 
             //LoadSensorInfoFromSite();
 
-            //LoadApartment2SensorFromSite();
+            LoadApartment2SensorFromSite();
 
-            for (int i = 1; i < 11801; i++)
-            {
-                LoadSampleFromSite(i);
-                Thread.Sleep(2000);
+
+              /*  for (int i = 1; i < 11801; i++)
+                {
+                    LoadSampleFromSite(i);
+                    Thread.Sleep(2000);
+                }*/
+
             }
-
-        }
 
         // Load sample from website
         public static void LoadSampleFromSite(int i)
@@ -36,9 +37,34 @@ namespace I4DABHandIn4
 
                 ReadingRootObject root = JsonConvert.DeserializeObject<ReadingRootObject>(json);
 
-                Console.WriteLine("Time:" + root.Timestamp + " Version: " + root.Version);
+                using (var db = new SensorContext())
+                {
+                    var samples = new List<Sample>(root.Reading.Count);
 
-                // Put into database here!
+                    foreach (var item in root.Reading)
+                    {
+                        samples.Add(new Sample()
+                        {
+                            ApartmentCharacteristicsId = item.AppartmentId,
+                            SensorCharacteristicsId = item.SensorId,
+                            Timestamp = item.Timestamp,
+                            AppartmentId = item.AppartmentId,
+                            SensorId = item.SensorId,
+                            Value = item.Value,
+                            SampleCollectionId = i
+                        });
+
+                        break;
+                    }
+
+                    // Create and save a sample collection 
+                    Console.WriteLine("Time:" + root.Timestamp + " Version: " + root.Version);
+
+                    var collection = new SampleCollection() { Version = root.Version, Timestamp = root.Timestamp, Samples = samples};
+                    db.SampleCollections.Add(collection);
+
+                    db.SaveChanges();
+                }
             }
         }
 
@@ -136,8 +162,33 @@ namespace I4DABHandIn4
                     }
                 }
 
+                using (var db = new SensorContext())
+                {
+                    /* Console.WriteLine("List length - " + list.Count);
 
-                // Do something with list here!
+                     Thread.Sleep(5000);
+
+                     for (int i = 0; i < list.Count; i++)
+                     {
+                         // Create and save a item
+                         db.SensorToApartments.Add(new SensorToApartment()
+                         {
+                             AppartmentId = list[i].ApartmentID,
+                             SensorId = list[i].SensorID
+                         });
+
+                         Console.WriteLine("Adding item - " + i);
+                     }*/
+
+                    db.SensorToApartments.Add(new SensorToApartment()
+                    {
+                        AppartmentId = list[0].ApartmentID,
+                        SensorId = list[0].SensorID
+                    });
+
+                    Console.WriteLine("--- Saving ----");
+                    db.SaveChanges();
+                }
             }
         }
     }
