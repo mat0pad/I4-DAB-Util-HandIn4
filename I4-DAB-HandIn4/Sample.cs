@@ -33,5 +33,7 @@ namespace I4DABHandIn4
     {
         public double Value { get; set; }
         public string Timestamp { get; set; }
+        public string Unit { get; set; }
+        public string Description { get; set; }
     }
 }

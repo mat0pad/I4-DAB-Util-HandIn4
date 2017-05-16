@@ -12,8 +12,6 @@ namespace I4DABHandIn4
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("Loading json here!");
-
             // Load static data into db
             // ----------------------------------
             // Load appartment & sensor information
@@ -26,14 +24,39 @@ namespace I4DABHandIn4
             // Simulate dynamic data that is
             // saved into db
             // ----------------------------------
-            for (int i = 1; i < 11801; i++)
+            /*for (int i = 1; i < 11801; i++)
             {  
                 Console.WriteLine("Loading new sample");
                 LoadSampleFromSite(i);
                 Thread.Sleep(5000);
-            }
+            }*/
             // ----------------------------------
 
+
+            // Stored procedure download list
+            // of samples between time
+            //-----------------------------------
+
+            Console.Write("We will search between 2014-10-08T07:50:15 AND 2014-11-08T07:57:15\n > Enter appartment number: ");
+
+            var no = Convert.ToInt32(Console.ReadLine());
+
+            Console.Write(" > Enter floor: ");
+
+            var floor = Convert.ToInt32(Console.ReadLine());
+
+            Console.WriteLine("\n\nSearching...");
+
+            var downloadSample = new DownloadSamples();
+            var list = downloadSample.GetSamplesForFlat("2014-10-08T07:50:15", "2014-11-08T07:57:15", no, floor);
+
+            Console.WriteLine("Found in interval from flat\n----------------------");
+            foreach (var item in list)
+            {
+                Console.WriteLine("Timestamp: {0},    Description: {1},   Value: {2},    Unit: {3}", item.Timestamp, item.Description, item.Value, item.Unit);
+            }
+            Console.WriteLine("-----------------------");
+            // ----------------------------------
         }
 
         // Load sample from website
