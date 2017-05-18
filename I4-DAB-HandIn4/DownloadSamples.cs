@@ -106,7 +106,7 @@ namespace I4DABHandIn4
                 {
                     // Close connection
                     rdr?.Close();
-                    conn.Close();
+                    conn?.Close();
                 }
 
                 return list;
@@ -117,6 +117,24 @@ namespace I4DABHandIn4
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
+                SqlCommand cmdAppartment = new SqlCommand();
+
+                SqlParameter numberParam = new SqlParameter("@number", SqlDbType.BigInt);
+                SqlParameter floorParam = new SqlParameter("@floor", SqlDbType.BigInt);
+
+                cmdAppartment.Parameters.Add(numberParam);
+                cmdAppartment.Parameters.Add(floorParam);
+
+                numberParam.Value = number;
+                floorParam.Value = floor;
+
+                cmdAppartment.CommandText =
+                    "SELECT  ApartmentCharacteristicsId FROM  dbo.ApartmentCharacteristics" +
+                    " WHERE (No = @number AND Floor = @floor)";
+
+                cmdAppartment.Connection = conn;
+                SqlDataReader rdr = null;
+                int appartmentId = -1;
                 try
                 {
                     conn.Open();
