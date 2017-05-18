@@ -5,8 +5,7 @@ using System.Data.Entity.ModelConfiguration;
 namespace I4DABHandIn4
 {
     public class Sample
-    {
-        
+    {  
         public int SensorId { get; set; }
         
 		public int AppartmentId { get; set; }

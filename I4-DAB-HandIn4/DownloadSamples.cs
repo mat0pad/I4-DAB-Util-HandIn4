@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Linq;
@@ -105,71 +106,108 @@ namespace I4DABHandIn4
                 {
                     // Close connection
                     rdr?.Close();
-                    conn?.Close();
+                    conn.Close();
                 }
 
                 return list;
             }
         }
 
-             [SqlProcedure]
-        public void AddSamplesForFlat(List<Sample> samples, SqlInt64 number, SqlInt64 floor)
+        public void CreateTrigger()
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                SqlCommand cmdAppartment = new SqlCommand();
-
-                SqlParameter numberParam = new SqlParameter("@number", SqlDbType.BigInt);
-                SqlParameter floorParam = new SqlParameter("@floor", SqlDbType.BigInt);
-
-                cmdAppartment.Parameters.Add(numberParam);
-                cmdAppartment.Parameters.Add(floorParam);
-
-                numberParam.Value = number;
-                floorParam.Value = floor;
-
-                cmdAppartment.CommandText =
-                    "SELECT  ApartmentCharacteristicsId FROM  dbo.ApartmentCharacteristics" +
-                    " WHERE (No = @number AND Floor = @floor)";
-
-                cmdAppartment.Connection = conn;
-                SqlDataReader rdr = null;
-                int appartmentId = -1;
                 try
                 {
                     conn.Open();
 
-                    // Send command
-                    rdr = cmdAppartment.ExecuteReader();
+                    var cmdStr = "CREATE TRIGGER manipulationsLogger " +
+                                 "ON dbo.Samples " +
+                                 "FOR UPDATE, INSERT, DELETE " +
+                                 "AS " +
+                                 "DECLARE @LogString1 VARCHAR(100) " +
+                                 "DECLARE @LogString2 VARCHAR(100) " +
+                                 "" +
+                                 "IF EXISTS(SELECT * FROM Inserted) " +
+                                 "  IF EXISTS(SELECT * FROM Deleted) " +
+                                 "  BEGIN " +
+                                 "    SELECT @LogString1 = (SELECT CONVERT(nvarchar, SensorId) + ' ' + CONVERT(nvarchar, AppartmentId) + ' ' + CONVERT(nvarchar, Value) + ' ' + Timestamp + ' ' + CONVERT(nvarchar, SampleCollectionId) FROM " +
+                                 "    Deleted)" +
+                                 "" +
+                                 "    SELECT @LogString2 = (SELECT CONVERT(nvarchar, SensorId) + ' ' + CONVERT(nvarchar, AppartmentId) + ' ' + CONVERT(nvarchar, Value) + ' ' + Timestamp + ' ' + CONVERT(nvarchar, SampleCollectionId) FROM " +
+                                 "    Inserted) " +
+                                 "    INSERT INTO dbo.LogManipulations(Operation, LogEntry1, LogEntry2) VALUES " +
+                                 "    ('Updated', @LogString1, @LogString2); " +
+                                 "   END " +
+                                 "" +
+                                 "ELSE " +
+                                 "  IF EXISTS(SELECT * FROM Deleted) " +
+                                 "  BEGIN " +
+                                 "    SELECT @LogString1 = (SELECT CONVERT(nvarchar, SensorId) + ' ' + CONVERT(nvarchar, AppartmentId) + ' ' + CONVERT(nvarchar, Value) + ' ' + Timestamp + ' ' + CONVERT(nvarchar, SampleCollectionId) FROM " +
+                                 "    Deleted) " +
+                                 "" +
+                                 "    INSERT INTO dbo.LogManipulations(Operation, LogEntry1) VALUES " +
+                                 "    ('Deleted', @LogString1); " +
+                                 "  END " +
+                                 "ELSE " +
+                                 "   BEGIN " +
+                                 "    SELECT @LogString1 = (SELECT CONVERT(nvarchar, SensorId) + ' ' + CONVERT(nvarchar, AppartmentId) + ' ' + CONVERT(nvarchar, Value) + ' ' + Timestamp + ' ' + CONVERT(nvarchar, SampleCollectionId) FROM " +
+                                 "    Inserted) " +
+                                 "" +
+                                 "    INSERT INTO dbo.LogManipulations(Operation, LogEntry1) VALUES " +
+                                 "    ('Inserted', @LogString1); " +
+                                 "   END";
 
-                    while (rdr.Read())
-                        appartmentId = Convert.ToInt32(rdr["ApartmentCharacteristicsId"]);
+                    new SqlCommand(cmdStr, conn).ExecuteNonQuery();
+                }
+                finally
+                {
+                    conn.Close();
+                }
+                
+            }
+
+        }
+
+        [SqlProcedure]
+        public void AddSamplesForFlat(List<Sample> samples)
+        {
+            using (var conn = new SqlConnection(connString))
+            {
+                try
+                {
+                    conn.Open();
+
+                    foreach (var sample in samples)
+                    {
+                        SqlCommand command = new SqlCommand("INSERT INTO dbo.Samples VALUES (@sensorId, @appartmentId, @value, @timeStamp, @sampleCollectionId)", conn);
+
+                        SqlParameter id = new SqlParameter("@sensorId", SqlDbType.Int);
+                        SqlParameter aId = new SqlParameter("@appartmentId", SqlDbType.Int);
+                        SqlParameter value = new SqlParameter("@value", SqlDbType.Float);
+                        SqlParameter timeStamp = new SqlParameter("@timeStamp", SqlDbType.NVarChar);
+                        SqlParameter sampleCollectionId = new SqlParameter("@sampleCollectionId", SqlDbType.Int);
+
+                        id.Value = sample.SensorId;
+                        aId.Value = sample.AppartmentId;
+                        value.Value = sample.Value;
+                        timeStamp.Value = sample.Timestamp;
+                        sampleCollectionId.Value = sample.SampleCollectionId;
+
+                        command.Parameters.Add(id);
+                        command.Parameters.Add(aId);
+                        command.Parameters.Add(value);
+                        command.Parameters.Add(timeStamp);
+                        command.Parameters.Add(sampleCollectionId);
+
+                        command.ExecuteNonQuery();
+                    }
                 }
                 finally
                 {
                     // Close connection
-                    rdr?.Close();
-                    conn?.Close();
+                    conn.Close();
                 }
-
-                if (appartmentId == -1) ;
-                // create appartmentId
-
-
-                // prepare command string
-                string insertString = @"
-                insert into Categories
-                (CategoryName, Description)
-                values ('Miscellaneous', 'Whatever doesn't fit elsewhere')";
-
-                // 1. Instantiate a new command with a query and connection
-                SqlCommand cmd = new SqlCommand(insertString, conn);
-
-                SqlParameter sampleParam = new SqlParameter("@sample", SqlDbType.BigInt);
-
-                // 2. Call ExecuteNonQuery to send command
-                cmd.ExecuteNonQuery();
-
             }
         }
     }

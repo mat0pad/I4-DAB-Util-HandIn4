@@ -1,5 +1,6 @@
 ﻿using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration;
+using System.Diagnostics;
 using I4DABHandIn4;
 
 
@@ -19,8 +20,8 @@ namespace I4DABHandIn4
                 u.SensorId,
                 u.AppartmentId
             });
+
+            //Database.Log = query => Debug.Write(query); // virker ikke
         }
-
-
     }
 }
