@@ -5,8 +5,14 @@ using I4DABHandIn4;
 
 namespace I4DABHandIn4
 {
-    public class SensorContext : DbContext
+    public partial class SensorContext : DbContext
     {
+
+        public SensorContext(): base("name=SensorContext")
+        {
+        }
+
+
         public DbSet<Sample> Samples { get; set; }
         public DbSet<SampleCollection> SampleCollections { get; set; }
         public DbSet<SensorCharacteristics> Sensors { get; set; }

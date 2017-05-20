@@ -13,7 +13,11 @@ namespace I4DABHandIn4
     class DownloadSamples
     {
 
-        private static readonly string connString = "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=I4DABHandIn4.SensorContext;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
+        private static readonly string connString = "data source=10.29.0.29;initial catalog=F17I4DABH4Gr4;persist security info=True;user id=F17I4DABH4Gr4;password=F17I4DABH4Gr4;MultipleActiveResultSets=True;App=EntityFramework";
+
+
+
+            //"Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=I4DABHandIn4.SensorContext;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
 
         [SqlProcedure]
         public List<SampleModel> GetSamplesForFlat(SqlString time1, SqlString time2, SqlInt64 number, SqlInt64 floor )
