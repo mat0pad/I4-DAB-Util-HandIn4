@@ -274,5 +274,48 @@ namespace I4DABHandIn4
                 }
             }
         }
+        public void AddSamplesForFlat(Samples samples)
+        {
+            // construct sql connection and sql command objects.
+            using (SqlConnection sqlcon = new SqlConnection(connString))
+            {
+                using (SqlCommand cmd = new SqlCommand("AddSamplesForFlat", sqlcon))
+                {
+                    // add the table-valued-parameter. 
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add("@Items", SqlDbType.Structured).Value = samples.GetItemsAsDataTable();
+
+                    // execute
+                    sqlcon.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+    }
+
+    public class Samples : List<Sample>
+    {
+        /// <summary>
+        /// Returns the samples as a DataTable.
+        /// </summary>
+        /// <returns><c>DataTable</c></returns>
+        public DataTable GetItemsAsDataTable()
+        {
+            // construct the empty DataTable object with columns.
+            DataTable table = new DataTable();
+            table.Columns.Add("timeStamp", typeof(string));
+            table.Columns.Add("appartmentId", typeof(int));
+            table.Columns.Add("value", typeof(float));
+            table.Columns.Add("sensorId", typeof(int));
+            table.Columns.Add("sampleCollectionId", typeof(int));
+
+            // add a single row for each item in the collection.
+            foreach (var item in this)
+            {
+                table.Rows.Add(item.Timestamp, item.AppartmentId, item.Value, item.SensorId, item.SampleCollectionId);
+            }
+
+            return table;
+        }
     }
 }

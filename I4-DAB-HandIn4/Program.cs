@@ -43,7 +43,7 @@ namespace I4DABHandIn4
             Console.WriteLine("\n\nSearching...");
 
             var downloadSample = new DownloadSamples();
-            // Burde kaldes fra SQL, da det er en stored procedure
+
             var list = downloadSample.GetSampleThroughProcedure("2013-10-08T07:50:15", "2015-11-08T07:57:15", id);
 
             Console.WriteLine("Found in interval from flat\n----------------------");
@@ -91,11 +91,11 @@ namespace I4DABHandIn4
 
                 //ds.CreateTrigger();
 
-                var samples = new List<Sample>();
+                var samples = new Samples();
 
                 samples.Add(new Sample()
                 {
-                    SensorId = 21,
+                    SensorId = 221,
                     AppartmentId = 1,
                     SampleCollectionId = 1,
                     Timestamp = "testTimeSample",
@@ -103,7 +103,7 @@ namespace I4DABHandIn4
                 });
 
                 // Burde kaldes fra SQL, da det er en stored procedure
-                ds.(samples);
+                ds.AddSamplesForFlat(samples);
             }*/
             // -----------------------------------------------
 
