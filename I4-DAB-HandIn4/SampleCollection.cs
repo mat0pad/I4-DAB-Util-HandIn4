@@ -13,7 +13,6 @@ namespace I4DABHandIn4
 
         public int Version { get; set; }
 
-       
         public string Timestamp { get; set; }
 
         [Key]

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
  using System.Data.Entity.Infrastructure;
  using System.IO;
-using System.Net;
+ using System.Linq;
+ using System.Net;
 using Newtonsoft.Json;
 using System.Threading;
 
@@ -32,12 +33,33 @@ namespace I4DABHandIn4
             }*/
             // ----------------------------------
 
+            // Stored procedure GetInterval
+            // of samples between time from apartmentid
+            //-----------------------------------
+            Console.Write("Search will find entries between 2013-10-08T07:50:15 AND 2015-11-08T07:57:15\n > Enter appartment id: ");
+
+            var id = Convert.ToInt32(Console.ReadLine());
+
+            Console.WriteLine("\n\nSearching...");
+
+            var downloadSample = new DownloadSamples();
+            // Burde kaldes fra SQL, da det er en stored procedure
+            var list = downloadSample.GetSampleThroughProcedure("2013-10-08T07:50:15", "2015-11-08T07:57:15", id);
+
+            Console.WriteLine("Found in interval from flat\n----------------------");
+            foreach (var item in list)
+            {
+                Console.WriteLine("Timestamp: {0},    Description: {1},   Value: {2},    Unit: {3}", item.Timestamp, item.Description, item.Value, item.Unit);
+            }
+            Console.WriteLine("-----------------------");
+            // ----------------------------------
+
 
             // Stored procedure download list
             // of samples between time
             //-----------------------------------
 
-            Console.Write("We will search between 2014-10-08T07:50:15 AND 2014-11-08T07:57:15\n > Enter appartment number: ");
+            /*Console.Write("Search will find entries between 2014-10-08T07:50:15 AND 2014-11-08T07:57:15\n > Enter appartment number: ");
 
             var no = Convert.ToInt32(Console.ReadLine());
 
@@ -48,6 +70,7 @@ namespace I4DABHandIn4
             Console.WriteLine("\n\nSearching...");
 
             var downloadSample = new DownloadSamples();
+            // Burde kaldes fra SQL, da det er en stored procedure
             var list = downloadSample.GetSamplesForFlat("2014-10-08T07:50:15", "2014-11-08T07:57:15", no, floor);
 
             Console.WriteLine("Found in interval from flat\n----------------------");
@@ -55,8 +78,50 @@ namespace I4DABHandIn4
             {
                 Console.WriteLine("Timestamp: {0},    Description: {1},   Value: {2},    Unit: {3}", item.Timestamp, item.Description, item.Value, item.Unit);
             }
-            Console.WriteLine("-----------------------");
+            Console.WriteLine("-----------------------");*/
             // ----------------------------------
+
+
+            // Sæt trigger og tilføj et nyt sample til databasen
+            // Kræver at der findes en SensorCollection med PK på 1
+            // -----------------------------------------------
+            /*using (var db = new SensorContext())
+            {
+                DownloadSamples ds = new DownloadSamples();
+
+                //ds.CreateTrigger();
+
+                var samples = new List<Sample>();
+
+                samples.Add(new Sample()
+                {
+                    SensorId = 21,
+                    AppartmentId = 1,
+                    SampleCollectionId = 1,
+                    Timestamp = "testTimeSample",
+                    Value = 10
+                });
+
+                // Burde kaldes fra SQL, da det er en stored procedure
+                ds.(samples);
+            }*/
+            // -----------------------------------------------
+
+
+
+            // Vis SQL for EF operation
+            //  -----------------------------------------------
+            /*
+            using (var db = new SensorContext())
+            {
+                // Query for all blogs with names starting with B 
+                var sample = from s in db.Samples
+                            where s.Timestamp.StartsWith("2")
+                            select s;
+
+                Console.WriteLine(sample);
+
+            }*/
         }
 
         // Load sample from website
